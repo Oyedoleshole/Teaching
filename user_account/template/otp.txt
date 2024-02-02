@@ -1,0 +1,8 @@
+{% autoescape off %}
+Hello,
+
+Your One Time Password is {{ otp }}
+
+Sincerely,
+The Company.
+{% endautoescape %}
