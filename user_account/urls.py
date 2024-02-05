@@ -1,9 +1,9 @@
 from django.urls import path
 from .views import RegisterUser, login_user, Task_added_by_admin, email_verification,ParentCreateKidUniqueId
 from teacher.views import TeacherList, show_student_relate_to_teacher_, task_assign_to_student_by_teacher, TaskAssignToStudentByTeacher \
-, TeacherRemarkAfterPostedTaskForStudent
+, TeacherRemarkAfterPostedTaskForStudent, GetTheTeacherData
 from student.views import Student_class, StudentLogin, show_student_details
-from task.views import ShowTaskBasedOnDateAndCategory, TaskProgress_orDone, create_task_type, create_age_group
+from task_app.views import ShowTaskBasedOnDateAndCategory, TaskProgress_orDone, create_task_type, create_age_group
 from parent.views import CreateSudentUniqueID
 urlpatterns = [
     path('email/verification/',email_verification),
@@ -22,5 +22,6 @@ urlpatterns = [
     path('student-details/',show_student_details),
     path('teacher-add-remark-and-file/',TeacherRemarkAfterPostedTaskForStudent.as_view()),
     path('create-task-type/',create_task_type),
-    path('create-age-group/',create_age_group)
+    path('create-age-group/',create_age_group),
+    path('get-the-teacher-data/',GetTheTeacherData.as_view())
 ]

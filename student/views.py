@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework.decorators import permission_classes
 from parent.models import Parent
-from task.models import Task
+from task_app.models import Task
 
 class Student_class(APIView):
     def get(self, request):

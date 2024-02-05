@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import User
-from task.models import Task, Task_type, Assignment
+from task_app.models import Task, Task_type, Assignment, AgeGroup
 from student.models import Student
 from teacher.models import Teacher
 from parent.models import Parent
@@ -29,7 +29,9 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ['id','name','description','date_of_posted']
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    list_display = ('id','user',)
+    list_display = ('id','user','date_of_posted')
+
+admin.site.register(AgeGroup)
 admin.site.register(Student)
 admin.site.register(Task_type)
 admin.site.register(Assignment)

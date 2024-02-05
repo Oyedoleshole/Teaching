@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Teacher
-from task.models import Task, Task_type
+from task_app.models import Task, Task_type
 from django.db import transaction
 from student.models import Student
 
@@ -23,13 +23,22 @@ class TeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Teacher
         fields = ['user', 'students', 'tasks']
-
-class TeacherlistingSerializer(serializers.ModelSerializer):
-    email = serializers.CharField(source='user.email', read_only = True)
-    # students = serializers.CharField(source='students', read_only = True)
+        
+class TeacherDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = Teacher
-        fields = ['email','students','image']
+        fields = '__all__'
+
+
+class TeacherlistingSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(source='user.email', read_only=True)
+    students = StudentSerializer(many=True, read_only=True)
+    date_and_time_of_task_assigned = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+
+    class Meta:
+        model = Teacher
+        fields = ['email', 'students', 'image', 'date_and_time_of_task_assigned']
+
 
 class ShowStudentRelateToTeacher(serializers.ModelSerializer):
     first_name = serializers.CharField(source='user.first_name', read_only=True)

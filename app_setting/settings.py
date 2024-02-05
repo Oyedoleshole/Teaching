@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     # 3 party apps 
     'user_account',
     'rest_framework_simplejwt',
-    'task',
+    'task_app',
     'teacher',
     'student',
     'parent',

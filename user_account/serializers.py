@@ -3,13 +3,14 @@ from rest_framework import serializers
 from user_account.models import User
 import re
 import random
-from task.models import Task, Task_type, AgeGroup
+from task_app.models import Task, Task_type, AgeGroup
 from django.contrib.auth import authenticate
 from student.models import Student
 from teacher.models import Teacher
 from django.db.models import Q
 from django.db import transaction
 from parent.models import Parent
+from datetime import datetime
 
 class RegisterSerializer(serializers.ModelSerializer):
     for_value = serializers.CharField(max_length=10, required=True)
@@ -90,7 +91,6 @@ class TaskCreationforAdminSerializer(serializers.ModelSerializer):
         submission_date = data.get('submission_date', None)
         assigned_teachers = data.get('assign_teacher',None)
         age_group_value =  data.get('age_group')
-        print("==================>",age_group_value)
         if not all(isinstance(teacher_id, int) for teacher_id in assigned_teachers):
             raise serializers.ValidationError("Invalid teacher ID(s)")
         if not task_value:
@@ -106,14 +106,14 @@ class TaskCreationforAdminSerializer(serializers.ModelSerializer):
         if not submission_date:
             pass
         try:
-            # data['age_group'] = AgeGroup.objects.get(id=data['age_group'])
-            # print("========>",data['age_group'])
-            # print("========>",age_group_value)
+            data['age_group'] = AgeGroup.objects.get(age_group=age_group_value)
             data['task'] = Task_type.objects.get(id=task_value)
-        except Task_type.DoesNotExist and AgeGroup.DoesNotExist:
-            raise serializers.ValidationError(f'Invalid task_type value or Invalid age_group value.')
+        except AgeGroup.DoesNotExist:
+            raise serializers.ValidationError(f'Invalid age_group value.')
+        except Task_type.DoesNotExist:
+            raise serializers.ValidationError(f'Invalid task_type value.')
         return data
-    
+
     def create(self, validated_data):
         assigned_teacher_ids = validated_data.get('assign_teacher', [])
         task_type = validated_data.get('task', None)
@@ -132,6 +132,8 @@ class TaskCreationforAdminSerializer(serializers.ModelSerializer):
             for teacher_id in assigned_teacher_ids:
                 try:
                     teacher = Teacher.objects.get(id=teacher_id)
+                    teacher.date_and_time_of_task_assigned = datetime.now()
+                    teacher.save()
                     task_creation.assigned_teacher.add(teacher)
                 except Teacher.DoesNotExist:
                     pass
@@ -140,3 +142,4 @@ class TaskCreationforAdminSerializer(serializers.ModelSerializer):
         else:
             response_message = "Task is already created"
         return {task_creation: response_message}
+

@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
-from .serializer import TeacherlistingSerializer, ShowStudentRelateToTeacher, TaskSerializer, TeacherSerializer, TaskRemarkSerializer
+from .serializer import TeacherlistingSerializer, ShowStudentRelateToTeacher, TaskSerializer, TeacherSerializer, TaskRemarkSerializer \
+,TeacherDataSerializer
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import *
@@ -9,12 +10,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.decorators import permission_classes
 from student.models import Student
-from task.models import Task
+from task_app.models import Task
 from rest_framework import generics, permissions
 class TeacherList(APIView):
     def get(self, request):
         data = Teacher.objects.all()
-        print("The data is ====>",data)
         serializer = TeacherlistingSerializer(data, many=True)
         if serializer.is_valid:
             return JsonResponse({"data":serializer.data},status=status.HTTP_200_OK)
@@ -136,3 +136,16 @@ class TeacherRemarkAfterPostedTaskForStudent(APIView):
                 return Response({"message": "Task not found"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        
+#Get the Teacher Data like Task.
+class GetTheTeacherData(APIView):
+    def get(self, request):
+        teacher_id = request.GET.get('teacher_id')
+        if not teacher_id:
+            return JsonResponse({"message": "Please provide teacher_id"}, status=400)
+        try:
+            teacher = Teacher.objects.get(id=teacher_id)
+        except Teacher.DoesNotExist:
+            return JsonResponse({"message": "Teacher not found"}, status=400)
+        serializer = TeacherDataSerializer(teacher)
+        return JsonResponse({"data": serializer.data}, status=status.HTTP_200_OK)
