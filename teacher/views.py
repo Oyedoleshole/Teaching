@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from .serializer import TeacherlistingSerializer, ShowStudentRelateToTeacher, TaskSerializer, TeacherSerializer, TaskRemarkSerializer \
-,TeacherDataSerializer
+,TeacherDataSerializer, Task_Type_serializer, TeacherActivityProgressSerializer
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import *
@@ -10,8 +10,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.decorators import permission_classes
 from student.models import Student
-from task_app.models import Task
+from task_app.models import Task, Task_type
 from rest_framework import generics, permissions
+from task_app.serializers import TaskSerializer
 class TeacherList(APIView):
     def get(self, request):
         data = Teacher.objects.all()
@@ -62,7 +63,7 @@ class task_assign_to_student_by_teacher(APIView):
 
     def post(self, request):
         task_id = request.POST.get('task_id')
-        student_id = request.POST.get('student_id')
+        student_id = request.POST.getlist('student_id')
         if not task_id:
             return JsonResponse({"message": "Please provide task_id"}, status=400)
         if not student_id:
@@ -75,7 +76,8 @@ class task_assign_to_student_by_teacher(APIView):
         except Task.DoesNotExist:
             return JsonResponse({"message": "Task not found"}, status=400)
         try:
-            get_the_student = Student.objects.get(id=student_id)
+            for value in student_id:
+                get_the_student = Student.objects.get(id=value)
         except Student.DoesNotExist:
             return JsonResponse({"message":"Student not found"},status=400)
         task.assigned_student.add(get_the_student)
@@ -128,10 +130,23 @@ class TeacherRemarkAfterPostedTaskForStudent(APIView):
             try:
                 fetch_task = Task.objects.get(id=task_id)
                 image_or_file = request.FILES.get('image_or_file')
-                fetch_task.task_image_for_hint = image_or_file
-                fetch_task.tutor_remark = tutor_remark
-                fetch_task.save()
-                return Response({"message": "Task has some remarks, and the file is uploaded successfully"}, status=status.HTTP_200_OK)
+                user = Teacher.objects.get(user=request.user)
+                if TeacherAddRemarkandImageForExistinceTask.objects.filter(user=user,task=fetch_task).exists():
+                    return Response(
+                        {'message': 'Task already has remarks and has been updated with the new file'}, 
+                        status=status.HTTP_200_OK
+                    )
+                created = TeacherAddRemarkandImageForExistinceTask.objects.create(
+                    user=user, 
+                    task=fetch_task, 
+                    task_image_for_hint=image_or_file, 
+                    remark=tutor_remark
+                )
+                if created:
+                    return Response(
+                        {"message": "Task has some remarks, and the file is uploaded successfully"}, 
+                        status=status.HTTP_200_OK
+                    )
             except Task.DoesNotExist:
                 return Response({"message": "Task not found"}, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -149,3 +164,56 @@ class GetTheTeacherData(APIView):
             return JsonResponse({"message": "Teacher not found"}, status=400)
         serializer = TeacherDataSerializer(teacher)
         return JsonResponse({"data": serializer.data}, status=status.HTTP_200_OK)
+    
+#07-02-2024
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def homeforteacher(request):
+    all_task_types = Task_type.objects.all()
+    serializer = Task_Type_serializer(all_task_types, many=True)
+    if serializer.is_valid:
+        return JsonResponse(
+            {
+                "data": serializer.data,
+            },
+            status=200
+        )
+    return JsonResponse(
+        {
+            "message": serializer.errors,
+        },
+        status=400,
+    )
+
+class AfterHomeScreenTask(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        task_type_id = request.GET.get('task_type_id')
+        if not task_type_id:
+            return JsonResponse({"message": "Please provide task_type_id"}, status=400)
+        try:
+            get_the_task_type = Task_type.objects.get(id=task_type_id)
+            get_the_task = Task.objects.filter(task=get_the_task_type)
+            serializer = TaskSerializer(get_the_task, many=True)
+            if serializer.is_valid:
+                return JsonResponse({"data":serializer.data},status=200)
+            return JsonResponse({"message":serializer.errors},status=400)
+        except Task_type.DoesNotExist:
+            return JsonResponse({"message":"Task Type Not Found!"},status=404)
+        except Task.DoesNotExist:
+            return JsonResponse({"message":"Task Not Found!"},status=404)
+        
+class ActivityProgressForTeacher(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        date = request.GET.get('date')
+        if not date:
+            return JsonResponse({"message": "Please provide date in format YYYY-MM-DD"}, status=400)
+        teacher = Teacher.objects.get(user=request.user)
+        get_the_data_for_requested_teacher = Task.objects.filter(assigned_teacher=teacher, date_of_posted__date = date)
+        # print("The fetched data is ===>",get_the_data_for_requested_teacher)
+        serializer = TeacherActivityProgressSerializer(get_the_data_for_requested_teacher, many=True)
+        if serializer.is_valid:
+            return Response({'data':serializer.data},status=200)
+        return Response({'message':serializer.errors},status=400)
+        

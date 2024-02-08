@@ -11,7 +11,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
 class TaskSerializer(serializers.ModelSerializer):
     assigned_student = StudentSerializer(many=True, read_only=True)
-
+    
     class Meta:
         model = Task
         fields = ['id', 'name', 'description', 'submission_date', 'assigned_student']
@@ -114,3 +114,18 @@ class TaskRemarkSerializer(serializers.Serializer):
         if not Task.objects.filter(id=value).exists():
             raise serializers.ValidationError("Task not found.")
         return value
+
+class Task_Type_serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task_type
+        fields = '__all__'
+
+class TeacherActivityProgressSerializer(serializers.ModelSerializer):
+    task_type = serializers.CharField(source='task.task_type')
+    assigned_student = serializers.SerializerMethodField()
+    def get_assigned_student(self, instance):
+        students = instance.assigned_student.all()
+        return [{'id': student.id, 'first_name': student.user.first_name, 'last_name':student.user.last_name} for student in students]
+    class Meta:
+        model = Task
+        fields = ('id', 'task_type', 'name', 'description', 'submission_date', 'is_completed','assigned_student')

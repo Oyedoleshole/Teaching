@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import User
 from task_app.models import Task, Task_type, Assignment, AgeGroup
 from student.models import Student
-from teacher.models import Teacher
+from teacher.models import Teacher, TeacherAddRemarkandImageForExistinceTask
 from parent.models import Parent
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -23,10 +23,17 @@ class UserAdmin(admin.ModelAdmin):
     #     return obj.is_superuser  
     # superuser_status.boolean = True
     # superuser_status.short_description = 'Admin'
+admin.site.register(TeacherAddRemarkandImageForExistinceTask)
+class TeacherInlineAdmin(admin.TabularInline):
+    model = TeacherAddRemarkandImageForExistinceTask
+    extra = 1
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     list_display = ['id','name','description','date_of_posted']
+    inlines = [
+        TeacherInlineAdmin
+    ]
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
     list_display = ('id','user','date_of_posted')

@@ -10,3 +10,12 @@ class Teacher(models.Model):
 
     def __str__(self):
         return self.user.email
+    
+class TeacherAddRemarkandImageForExistinceTask(models.Model):
+    user = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    task = models.ForeignKey(to='task_app.Task', on_delete=models.DO_NOTHING)
+    task_image_for_hint = models.FileField(upload_to='user_image',null=True, blank=True)
+    remark = models.TextField()
+
+    def __str__(self):
+        return self.remark + " - " + str(self.user) 

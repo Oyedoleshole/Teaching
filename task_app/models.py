@@ -16,6 +16,7 @@ class AgeGroup(models.Model):
         
 class Task_type(models.Model):
     task_type = models.CharField(max_length=200, null=True, blank=True)
+    image = models.ImageField(upload_to='user_image', null=True, blank=True)
 
     def __str__(self):
         return self.task_type
@@ -25,12 +26,10 @@ class Task(models.Model):
     task = models.ForeignKey(Task_type, on_delete=models.CASCADE,null=True, blank=True)
     name = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField()
-    task_image_for_hint = models.FileField(upload_to='user_image',null=True, blank=True)
     assigned_teacher = models.ManyToManyField(Teacher, related_name="assigned_tasks", blank=True)
     assigned_student = models.ManyToManyField(Student, related_name="tasks", blank=True)
-    tutor_remark = models.TextField(null=True, blank=True)
     submission_date = models.CharField(max_length=200, null=True,blank=True)
-    is_completed = models.CharField(max_length=200,choices=status_choice, null=True,blank=True)
+    is_completed = models.CharField(max_length=200,choices=status_choice, default='pending')
     date_of_posted = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):

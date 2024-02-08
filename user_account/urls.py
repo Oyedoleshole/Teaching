@@ -1,9 +1,10 @@
 from django.urls import path
 from .views import RegisterUser, login_user, Task_added_by_admin, email_verification,ParentCreateKidUniqueId
 from teacher.views import TeacherList, show_student_relate_to_teacher_, task_assign_to_student_by_teacher, TaskAssignToStudentByTeacher \
-, TeacherRemarkAfterPostedTaskForStudent, GetTheTeacherData
+, TeacherRemarkAfterPostedTaskForStudent, GetTheTeacherData, AfterHomeScreenTask, homeforteacher, ActivityProgressForTeacher
 from student.views import Student_class, StudentLogin, show_student_details
-from task_app.views import ShowTaskBasedOnDateAndCategory, TaskProgress_orDone, create_task_type, create_age_group
+from task_app.views import ShowTaskBasedOnDateAndCategory, TaskProgress_orDone, create_task_type, create_age_group, update_the_task \
+, ShowActivityProgressofTask
 from parent.views import CreateSudentUniqueID
 urlpatterns = [
     path('email/verification/',email_verification),
@@ -23,5 +24,10 @@ urlpatterns = [
     path('teacher-add-remark-and-file/',TeacherRemarkAfterPostedTaskForStudent.as_view()),
     path('create-task-type/',create_task_type),
     path('create-age-group/',create_age_group),
-    path('get-the-teacher-data/',GetTheTeacherData.as_view())
+    path('get-the-teacher-data/',GetTheTeacherData.as_view()),
+    path('update-the-existence-task/',update_the_task),
+    path('show-activity-progress-of-task/',ShowActivityProgressofTask.as_view()),
+    path('home-screen-for-teacher/',homeforteacher),
+    path('teacher-selection-task/',AfterHomeScreenTask.as_view()),
+    path('show-activity-progress-of-task-for-requested-teacher/',ActivityProgressForTeacher.as_view())
 ]

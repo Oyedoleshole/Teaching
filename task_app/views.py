@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.db.models import Q
 from .models import Task, Assignment, Task_type, AgeGroup
-from .serializers import TaskSerializer, TaskSerializerDate
+from .serializers import TaskSerializer, TaskSerializerDate, TaskUpdateSerializer, ActivitySerializer
 from rest_framework.decorators import api_view
 from teacher.models import Teacher
 import datetime
@@ -73,3 +73,33 @@ def create_age_group(request):
     if created:
         return Response({'message':'Age is created'})
     return Response({'message':'Age is already created'})
+
+#Function for Update the Task
+@api_view(['POST'])
+def update_the_task(request):
+    serializer = TaskUpdateSerializer(data=request.data)
+    if serializer.is_valid():
+        task_id = serializer.validated_data.get('task_id')
+        age_group_name = serializer.validated_data.get('age_group')
+        try:
+            task = Task.objects.get(id=task_id)
+            age_group = AgeGroup.objects.get(age_group=age_group_name)
+            serializer.update(task, serializer.validated_data, age_group=age_group)
+            return Response({"message": "Task is updated"}, status=status.HTTP_200_OK)
+        except Task.DoesNotExist:
+            return Response({"message": "Task does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        except AgeGroup.DoesNotExist:
+            return Response({"message": "Age group does not exist"}, status=status.HTTP_404_NOT_FOUND)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ShowActivityProgressofTask(APIView):
+    def get(self, request):
+        get_the_date = request.GET.get('date', None)
+        if not get_the_date:
+            return Response({"message": "Please provide date in format YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
+        fetched_data_from_date_params = Task.objects.filter(date_of_posted__date=get_the_date)
+        serializer = ActivitySerializer(fetched_data_from_date_params, many=True)
+        if serializer.is_valid:
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
