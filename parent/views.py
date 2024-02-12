@@ -9,22 +9,38 @@ from parent.models import Parent
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def CreateSudentUniqueID(request):
-    data = request.data
-    if not data:
-        return Response({"message": "Please provide name"}, status=400)
-
-    hash_name = generate_unique_id(data['name'])
+    name = request.POST.get('first_name')
+    last_name = request.POST.get('last_name')
+    dob = request.POST.get("dob")
+    image = request.FILES.get('image', None)
+    if not image:
+        pass
+    if not name:
+        return Response({"message": "Please provide first_name"}, status=400)
+    if not last_name:
+        return Response({"message": "Please provide last_name"}, status=400)
+    if not dob:
+        return Response({"message": "Please provide dob in format of YYYY-MM-DD"}, status=400)
+    hash_name = generate_unique_id(name)
     child_creation = User.objects.create_user(
         email=hash_name,
-        password=data['name'],
-        first_name=data['name'],
-        last_name=data['name'],
+        password=dob,
+        first_name=name,
+        last_name=last_name,
+        image=image,
     )
     student = Student.objects.create(user=child_creation)
+    student.dob = dob
+    student.first_name = name
+    student.image = image
+    student.last_name = last_name
+    student.user.is_verified = True
+    student.user.save()
+    student.save()
     parent = Parent.objects.get(user=request.user)
     parent.childrens.add(student)
     parent.save()
-    return Response({"The Hash id": hash_name})
+    return Response({"kid_unique_email": hash_name,"password":dob},status=201)
     
 def generate_unique_id(name):
     first_name = name.split()[0].lower()

@@ -5,7 +5,7 @@ class TaskSerializer(serializers.ModelSerializer):
     task_type = serializers.CharField(source='task.task_type')
     class Meta:
         model = Task
-        fields = ('id', 'task_type', 'name', 'description', 'submission_date', 'is_completed')
+        fields = ('id', 'task_type', 'name', 'description', 'submission_date', 'is_completed','date_of_posted')
 
 class TaskSerializerDate(serializers.ModelSerializer):
     task_type = serializers.CharField(source='task.task_type')

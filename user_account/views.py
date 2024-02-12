@@ -14,6 +14,8 @@ from django.core.mail import send_mail, BadHeaderError
 from smtplib import SMTPResponseException
 from django.template.loader import render_to_string
 from django.http import JsonResponse
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 class EmailValidationOnForgotPassword(PasswordResetForm):
     def clean_email(self):
@@ -104,8 +106,17 @@ class Task_added_by_admin(APIView):
             return Response({"message":"Task added successfully"},status=status.HTTP_201_CREATED)
         return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def ParentCreateKidUniqueId(request):
-    data = request.data
-    create_parent, created = User.objects.create_parent(first_name=data['first_name'],last_name=data['last_name'], mobile=data['mobile'], password=data['password'],email=data['email'])
-    return JsonResponse({"message":"Parent Created"})
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_any_account(request):
+    try:
+        id = request.user.id
+        print("The Id is =====>",id)
+        user = User.objects.get(id=id)
+        user.delete()
+        return Response({"message":"Account deleted successfully"},status=status.HTTP_200_OK)
+    except ObjectDoesNotExist:
+        return Response({"message":"User not found"},status=status.HTTP_404_NOT_FOUND)
+
+

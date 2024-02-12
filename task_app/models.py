@@ -30,7 +30,7 @@ class Task(models.Model):
     assigned_student = models.ManyToManyField(Student, related_name="tasks", blank=True)
     submission_date = models.CharField(max_length=200, null=True,blank=True)
     is_completed = models.CharField(max_length=200,choices=status_choice, default='pending')
-    date_of_posted = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    date_of_posted = models.DateField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return self.name

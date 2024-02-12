@@ -216,4 +216,18 @@ class ActivityProgressForTeacher(APIView):
         if serializer.is_valid:
             return Response({'data':serializer.data},status=200)
         return Response({'message':serializer.errors},status=400)
-        
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def task_progress_for_teacher_app(request):
+    task_id = request.GET.get('task_id')
+    if not task_id:
+        return JsonResponse({"message": "Please provide task_id"}, status=400)
+    try:
+        task = Task.objects.get(id=task_id)
+        serializer = TeacherActivityProgressSerializer(task)
+        if serializer.is_valid:
+            return Response({'data':serializer.data},status=200)
+        return Response({'message':serializer.errors},status=400)
+    except Task.DoesNotExist:
+        return JsonResponse({"message": "No such task exists."},status=400)

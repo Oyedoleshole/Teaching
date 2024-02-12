@@ -21,6 +21,7 @@ class Student_class(APIView):
             return JsonResponse({"data":serializer.data},status=status.HTTP_200_OK)
         return JsonResponse({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
 
+
 class StudentLogin(APIView):
     def post(self, request):
         student_email = request.POST.get('student_email')
@@ -44,4 +45,16 @@ def show_student_details(request):
         print("error")
         return JsonResponse(str(e),safe=False)
 
-
+#API for Student Profile Details.
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_student_profile_details(request):
+    try:
+        get_student_from_student_table = Student.objects.get(user=request.user)
+        student_details = Parent.objects.get(childrens=get_student_from_student_table)
+        if not get_student_from_student_table.image:
+            return JsonResponse({"student_details":[{"first_name":get_student_from_student_table.first_name,"last_name":get_student_from_student_table.last_name,"email":request.user.email,"dob":get_student_from_student_table.dob}],"parent_details":[{"first_name":student_details.user.first_name,"last_name":student_details.user.last_name,"email":student_details.user.email,"mobile":student_details.user.mobile}]}, safe=False)
+        return JsonResponse({"student_details":[{"first_name":get_student_from_student_table.first_name,"last_name":get_student_from_student_table.last_name,"email":request.user.email,"image":get_student_from_student_table.image.url,"dob":get_student_from_student_table.dob}],"parent_details":[{"first_name":student_details.user.first_name,"last_name":student_details.user.last_name,"email":student_details.user.email,"mobile":student_details.user.mobile}]}, safe=False)
+    except Parent.DoesNotExist and Student.DoesNotExist and Exception as e:
+        print("error")
+        return JsonResponse(str(e),safe=False)

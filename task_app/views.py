@@ -27,7 +27,7 @@ class ShowTaskBasedOnDateAndCategory(APIView):
                 task_details = Task.objects.filter(
                     q_objects,
                     assigned_teacher=teacher_id,
-                    date_of_posted__date=date
+                    date_of_posted=date
                 )
                 serializer = TaskSerializer(task_details, many=True)
                 return Response({"data": serializer.data}, status=status.HTTP_200_OK)
