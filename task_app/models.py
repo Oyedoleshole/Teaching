@@ -1,5 +1,4 @@
 from django.db import models
-from user_account.models import User
 from teacher.models import Teacher
 from student.models import Student
 
@@ -37,9 +36,11 @@ class Task(models.Model):
 
 class Assignment(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE,null=True,blank=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE,null=True,blank=True)
+    assessment_file = models.FileField(upload_to='user_image',null=True, blank=True)
     is_completed = models.BooleanField(default=False)
     completion_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.teacher.user.email} - {self.task.name}"
+        return f"{self.student.user.email} - {self.task.name}"

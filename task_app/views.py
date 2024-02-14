@@ -44,15 +44,6 @@ class ShowTaskBasedOnDateAndCategory(APIView):
             return Response({"date":serializer.data},status=200)
         except Exception as e:
             return Response({"message":serializer.errors,"error":str(e)},status=400)
-
-class TaskProgress_orDone(APIView):
-    def post(self, request):
-        teacher_id = request.POST.get('teacher_id')
-        task_id = request.POST.get('task_id')
-        get_the_teacher = Teacher.objects.get(id=teacher_id)
-        get_the_task = Task.objects.get(id=task_id)
-        assessment = Assignment.objects.get_or_create(task=get_the_task, teacher=get_the_teacher,is_completed=True)
-        return Response({"message":"Task is completed"}, status=200)
     
 @api_view(['POST'])
 def create_task_type(request):
@@ -97,7 +88,7 @@ class ShowActivityProgressofTask(APIView):
         get_the_date = request.GET.get('date', None)
         if not get_the_date:
             return Response({"message": "Please provide date in format YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
-        fetched_data_from_date_params = Task.objects.filter(date_of_posted__date=get_the_date)
+        fetched_data_from_date_params = Task.objects.filter(date_of_posted=get_the_date)
         serializer = ActivitySerializer(fetched_data_from_date_params, many=True)
         if serializer.is_valid:
             return Response({"data": serializer.data}, status=status.HTTP_200_OK)

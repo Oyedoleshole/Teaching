@@ -48,7 +48,7 @@ class task_assign_to_student_by_teacher(APIView):
         for values in students_are:
             student_ID = values.id
             students_name = f"{values.user.first_name} {values.user.last_name}"
-            student_ID_list.append(student_ID)
+            students_name_list.append(student_ID)
             students_name_list.append(students_name)
         try:
             task_details = Task.objects.get(id=task_id, assigned_teacher=student_listing)
@@ -59,7 +59,7 @@ class task_assign_to_student_by_teacher(APIView):
         task_name = task_details.name
         task_details_ = task_details.description
         submission_date = task_details.submission_date
-        return JsonResponse({"teacher":student_listing.user.email,"task_id":task_ids,"task_name":task_name,"task_details":task_details_,"submission_date":submission_date,"student_id":student_ID_list,"students_name":students_name_list},status=200)
+        return JsonResponse({"teacher":student_listing.user.email,"task_id":task_ids,"task_name":task_name,"task_details":task_details_,"submission_date":submission_date,"students_name_and_ids":students_name_list},status=200)
 
     def post(self, request):
         task_id = request.POST.get('task_id')
@@ -81,6 +81,7 @@ class task_assign_to_student_by_teacher(APIView):
         except Student.DoesNotExist:
             return JsonResponse({"message":"Student not found"},status=400)
         task.assigned_student.add(get_the_student)
+        teacher.students.add(get_the_student)
         return JsonResponse({"message": "Task assigned successfully"},status=200)
 
 #This is not in use.

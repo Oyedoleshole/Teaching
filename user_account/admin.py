@@ -27,17 +27,21 @@ admin.site.register(TeacherAddRemarkandImageForExistinceTask)
 class TeacherInlineAdmin(admin.TabularInline):
     model = TeacherAddRemarkandImageForExistinceTask
     extra = 1
-
+class AssessmentAdmin(admin.TabularInline):
+    model = Assignment
+    extra = 1
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     list_display = ['id','name','description','date_of_posted']
     inlines = [
-        TeacherInlineAdmin
+        AssessmentAdmin,
+        TeacherInlineAdmin,
     ]
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
     list_display = ('id','user','date_of_posted')
-
+    inlines = [AssessmentAdmin]
+    
 admin.site.register(AgeGroup)
 admin.site.register(Student)
 admin.site.register(Task_type)

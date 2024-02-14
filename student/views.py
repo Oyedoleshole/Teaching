@@ -8,12 +8,13 @@ from rest_framework.permissions import IsAuthenticated
 from .models import *
 from user_account.models import User
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.decorators import permission_classes
 from parent.models import Parent
-from task_app.models import Task
+from task_app.models import Task, Assignment
 from django.db.models import Q
 from task_app.serializers import TaskSerializer
+import datetime
 
 class Student_class(APIView):
     def get(self, request):
@@ -80,4 +81,27 @@ class FilterTaskForStudent(APIView):
             return Response({"message":"Error"},status=400)
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+
+class TaskDoneByStudentAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        task_id = request.data.get('task_id')
+        assessment_file = request.FILES.get('assessment_file')
+        if not task_id:
+            return Response({"message": "Please provide task_id"}, status=status.HTTP_400_BAD_REQUEST)
+        if not assessment_file:
+            return Response({"message": "Please provide assessment_file"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            task = Task.objects.get(id=task_id)
+            user = User.objects.get(email=request.user.email)
+            student = Student.objects.get(user=user)
+            getting_the_teacher = Teacher.objects.get(students=student)
+            if getting_the_teacher:
+                print("The Teacher is===>", getting_the_teacher)
+            else:
+                print("No Teacher found")
+            Assignment.objects.get_or_create(teacher=getting_the_teacher, student=student, task=task, assessment_file=assessment_file)
+            return Response({"message": "Task Completed"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

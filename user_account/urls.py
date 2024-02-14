@@ -3,8 +3,8 @@ from .views import RegisterUser, login_user, Task_added_by_admin, email_verifica
 from teacher.views import TeacherList, show_student_relate_to_teacher_, task_assign_to_student_by_teacher, TaskAssignToStudentByTeacher \
 , TeacherRemarkAfterPostedTaskForStudent, GetTheTeacherData, AfterHomeScreenTask, homeforteacher, ActivityProgressForTeacher, task_progress_for_teacher_app \
 
-from student.views import Student_class, StudentLogin, show_student_details, get_student_profile_details, FilterTaskForStudent
-from task_app.views import ShowTaskBasedOnDateAndCategory, TaskProgress_orDone, create_task_type, create_age_group, update_the_task \
+from student.views import Student_class, StudentLogin, show_student_details, get_student_profile_details, FilterTaskForStudent, TaskDoneByStudentAPI
+from task_app.views import ShowTaskBasedOnDateAndCategory, create_task_type, create_age_group, update_the_task \
 , ShowActivityProgressofTask
 from parent.views import CreateSudentUniqueID
 urlpatterns = [
@@ -17,7 +17,6 @@ urlpatterns = [
     path('list-of-students/',Student_class.as_view()),
     path('show-student-relate-to-teachers/',show_student_relate_to_teacher_),
     path('past-task/',ShowTaskBasedOnDateAndCategory.as_view()),
-    path('task-completion/',TaskProgress_orDone.as_view()),
     path('create-unique-student-id/', CreateSudentUniqueID),
     path('task-assigned-to-student-by-teacher/',task_assign_to_student_by_teacher.as_view()),
     path('student-login/',StudentLogin.as_view()),
@@ -35,4 +34,5 @@ urlpatterns = [
     path('get-student-profile-details/',get_student_profile_details),
     path('delete-any-account/',delete_any_account),
     path('filter-task-for-student/',FilterTaskForStudent.as_view()),
+    path('task-completion/',TaskDoneByStudentAPI.as_view())
 ]
