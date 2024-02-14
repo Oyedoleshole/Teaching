@@ -8,8 +8,8 @@ from .models import Task, Assignment, Task_type, AgeGroup
 from .serializers import TaskSerializer, TaskSerializerDate, TaskUpdateSerializer, ActivitySerializer
 from rest_framework.decorators import api_view
 from teacher.models import Teacher
-import datetime
 
+#For Teacher and Student.
 class ShowTaskBasedOnDateAndCategory(APIView):
     def get(self, request):
         teacher_id = request.GET.get('teacher_id')

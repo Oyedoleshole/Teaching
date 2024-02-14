@@ -16,6 +16,7 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
+import random
 
 class EmailValidationOnForgotPassword(PasswordResetForm):
     def clean_email(self):
@@ -44,7 +45,7 @@ class RegisterUser(APIView):
             except BadHeaderError and SMTPResponseException:
                 return Response({"message":"SMTP Error"}, status=status.HTTP_404_NOT_FOUND)
         return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
+
 @api_view(['POST'])
 def email_verification(request):
     try:
@@ -98,6 +99,29 @@ def login_user(request):
         return Response({'message': "Login successfully", 'access_token': str(refresh.access_token)}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+def resend_otp(request):
+    try:
+        email = request.data.get('email')
+        if not email:
+            return JsonResponse({"message":"Please enter Email"},status=status.HTTP_400_BAD_REQUEST)
+        user = User.objects.get(email=email)
+        try:
+            subject = "One Time Password"
+            context = {
+            "email": email,
+            'otp':str(random.randint(1000,9999))
+            }
+            email_context = render_to_string("otp.txt", context)
+            send_mail(subject, email_context, 'sharmaeshu54@gmail.com', [email], fail_silently=False)
+        except BadHeaderError:
+            return JsonResponse({"message":"Uncaught Error"},status=status.HTTP_400_BAD_REQUEST)
+        user.otp = int(context['otp'])
+        user.save()
+        return JsonResponse({"message":"OTP is sent successfully"},status=status.HTTP_200_OK)
+    except ObjectDoesNotExist:
+        return JsonResponse({"message":"User is None"},status=status.HTTP_400_BAD_REQUEST)
+
 class Task_added_by_admin(APIView):
     def post(self, request):
         serializer = TaskCreationforAdminSerializer(data=request.data)
@@ -105,7 +129,6 @@ class Task_added_by_admin(APIView):
             serializer.save()
             return Response({"message":"Task added successfully"},status=status.HTTP_201_CREATED)
         return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
@@ -118,5 +141,3 @@ def delete_any_account(request):
         return Response({"message":"Account deleted successfully"},status=status.HTTP_200_OK)
     except ObjectDoesNotExist:
         return Response({"message":"User not found"},status=status.HTTP_404_NOT_FOUND)
-
-

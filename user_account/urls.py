@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import RegisterUser, login_user, Task_added_by_admin, email_verification,delete_any_account
+from .views import RegisterUser, login_user, Task_added_by_admin, email_verification,delete_any_account, resend_otp
 from teacher.views import TeacherList, show_student_relate_to_teacher_, task_assign_to_student_by_teacher, TaskAssignToStudentByTeacher \
 , TeacherRemarkAfterPostedTaskForStudent, GetTheTeacherData, AfterHomeScreenTask, homeforteacher, ActivityProgressForTeacher, task_progress_for_teacher_app \
 
-from student.views import Student_class, StudentLogin, show_student_details, get_student_profile_details
+from student.views import Student_class, StudentLogin, show_student_details, get_student_profile_details, FilterTaskForStudent
 from task_app.views import ShowTaskBasedOnDateAndCategory, TaskProgress_orDone, create_task_type, create_age_group, update_the_task \
 , ShowActivityProgressofTask
 from parent.views import CreateSudentUniqueID
@@ -12,6 +12,7 @@ urlpatterns = [
     path('task_creation/',Task_added_by_admin.as_view()),
     path('register/',RegisterUser.as_view(), name="register_the_user"),
     path('login/', login_user, name='login_user'),
+    path('resend-otp/',resend_otp),
     path('list-of-teachers/',TeacherList.as_view()),
     path('list-of-students/',Student_class.as_view()),
     path('show-student-relate-to-teachers/',show_student_relate_to_teacher_),
@@ -32,5 +33,6 @@ urlpatterns = [
     path('show-activity-progress-of-task-for-requested-teacher/',ActivityProgressForTeacher.as_view()),
     path('show-task-progress-of-task-for-requested-teacher/',task_progress_for_teacher_app),
     path('get-student-profile-details/',get_student_profile_details),
-    path('delete-any-account/',delete_any_account)
+    path('delete-any-account/',delete_any_account),
+    path('filter-task-for-student/',FilterTaskForStudent.as_view()),
 ]
