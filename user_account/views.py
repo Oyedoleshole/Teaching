@@ -45,6 +45,44 @@ class RegisterUser(APIView):
             except BadHeaderError and SMTPResponseException:
                 return Response({"message":"SMTP Error"}, status=status.HTTP_404_NOT_FOUND)
         return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self,request):
+        email = request.data.get('email')
+        new_password = request.data.get('new_password')
+        confirm_password = request.data.get('confirm_password')
+        if not email or not new_password or not confirm_password:
+            message="Please provide all the fields -> email, new_password, confirm_password"
+            return Response({"message":message},status=status.HTTP_400_BAD_REQUEST)
+        if new_password != confirm_password:
+            return JsonResponse({'message':'Passwords do not match'}, status=400)
+        else:
+            try:
+                user = User.objects.get(email=email)
+                user.set_password(new_password)
+                user.save()
+                return JsonResponse({"message": "Password changed successfully"}, status=status.HTTP_200_OK)
+            except ObjectDoesNotExist:
+                return JsonResponse({"message": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
+        
+#Password Change API
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def password_change(request):
+    email = request.user.email
+    old_password = request.POST.get('old_password')
+    new_password = request.POST.get('new_password')
+    confirm_password = request.POST.get('confirm_password')
+    if not old_password or not new_password or not confirm_password:
+        message="Please provide all the fields -> old_password, new_password, confirm_password"
+        return Response({"message":message},status=status.HTTP_400_BAD_REQUEST)
+    user = User.objects.get(email=email)
+    if not user.check_password(old_password):
+        return JsonResponse({"message": "Old password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+    if new_password!= confirm_password:
+        return JsonResponse({'message':'Passwords do not match'}, status=400)
+    user.set_password(new_password)
+    user.save()
+    return JsonResponse({"message": "Password changed successfully"}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def email_verification(request):
@@ -78,26 +116,42 @@ def login_user(request):
         email = serializer.validated_data.get('email')
         mobiles = serializer.validated_data.get('mobile')
         password = serializer.validated_data.get('password')
+        for_value = serializer.validated_data.get('for_value')
         if not email and not mobiles:
             return Response({'message': 'Either email or mobile must be provided'}, status=status.HTTP_400_BAD_REQUEST)
-        user = None
-        if email:
-            user = authenticate(request,email=email, password=password)
-            print("User is authenticate",user)
-        elif mobiles:
-            user = authenticate(request,mobile=mobiles, password=password)
-            print("User is authenticate with his mobile",user)
-        if user is None:
-            return Response({'message': 'Either Email or Password is incorrect or the user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            exist_user = User.objects.get(email=user.email)
-            if exist_user.is_verified is False:
-                return Response({"message": "Please verify first"}, status=status.HTTP_400_BAD_REQUEST)
-        except ObjectDoesNotExist:
-            return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-        refresh = RefreshToken.for_user(user)
-        return Response({'message': "Login successfully", 'access_token': str(refresh.access_token)}, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not for_value:
+            return Response({'message': 'Please enter for value','values':'admin,parent,teacher,children'}, status=status.HTTP_400_BAD_REQUEST)
+        if for_value:
+            user = None
+            if email:
+                user = authenticate(request, email=email, password=password)
+                print("User is authenticate",user)
+            elif mobiles:
+                user = authenticate(request,mobile=mobiles, password=password)
+                print("User is authenticate with his mobile",user)
+            if user is None:
+                return Response({'message': 'Either Email or Password is incorrect or the user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                exist_user = User.objects.get(email=user.email)
+                if exist_user.is_verified is False:
+                    return Response({"message": "Please verify first"}, status=status.HTTP_400_BAD_REQUEST)
+                if for_value == "admin" and exist_user.is_superuser == True:
+                    refresh = RefreshToken.for_user(user)
+                    return Response({'message': "Login successfully", 'access_token': str(refresh.access_token)}, status=status.HTTP_200_OK)
+                elif for_value == "parent" and exist_user.is_parent == True:
+                    refresh = RefreshToken.for_user(user)
+                    return Response({'message': "Login successfully", 'access_token': str(refresh.access_token)}, status=status.HTTP_200_OK)
+                elif for_value == 'children' and exist_user.is_student == True:
+                    refresh = RefreshToken.for_user(user)
+                    return Response({'message': "Login successfully", 'access_token': str(refresh.access_token)}, status=status.HTTP_200_OK)
+                elif for_value == 'teacher' and exist_user.is_teacher == True:
+                    refresh = RefreshToken.for_user(user)
+                    return Response({'message': "Login successfully", 'access_token': str(refresh.access_token)}, status=status.HTTP_200_OK)
+                else:
+                    return Response({'message': 'User does not exists'}, status=status.HTTP_400_BAD_REQUEST)
+            except ObjectDoesNotExist:
+                return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def resend_otp(request):

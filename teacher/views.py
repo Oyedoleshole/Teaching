@@ -78,6 +78,7 @@ class task_assign_to_student_by_teacher(APIView):
         try:
             for value in student_id:
                 get_the_student = Student.objects.get(id=value)
+                get_the_student.task_assign.add(task)
         except Student.DoesNotExist:
             return JsonResponse({"message":"Student not found"},status=400)
         task.assigned_student.add(get_the_student)
@@ -170,11 +171,18 @@ class GetTheTeacherData(APIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def homeforteacher(request):
+    user = User.objects.get(email=request.user.email)
     all_task_types = Task_type.objects.all()
+    if user:
+        task = Task.objects.filter(task__in=all_task_types)
+        for values in task:
+            pass
+    teachers = values.assigned_teacher.all().distinct().count()
     serializer = Task_Type_serializer(all_task_types, many=True)
     if serializer.is_valid:
         return JsonResponse(
             {
+                "task_assigned":teachers,
                 "data": serializer.data,
             },
             status=200

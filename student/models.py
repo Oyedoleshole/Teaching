@@ -7,6 +7,7 @@ class Student(models.Model):
     last_name = models.CharField(max_length=200, null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
     image = models.FileField(upload_to='user_image',null=True, blank=True)
+    task_assign = models.ManyToManyField(to='task_app.task',blank=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
     dob = models.CharField(max_length=200, null=True, blank=True)
 

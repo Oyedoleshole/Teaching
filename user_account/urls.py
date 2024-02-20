@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterUser, login_user, Task_added_by_admin, email_verification,delete_any_account, resend_otp
+from .views import RegisterUser, login_user, Task_added_by_admin, email_verification,delete_any_account, resend_otp, password_change
 from teacher.views import TeacherList, show_student_relate_to_teacher_, task_assign_to_student_by_teacher, TaskAssignToStudentByTeacher \
 , TeacherRemarkAfterPostedTaskForStudent, GetTheTeacherData, AfterHomeScreenTask, homeforteacher, ActivityProgressForTeacher, task_progress_for_teacher_app \
 
@@ -13,6 +13,7 @@ urlpatterns = [
     path('register/',RegisterUser.as_view(), name="register_the_user"),
     path('login/', login_user, name='login_user'),
     path('resend-otp/',resend_otp),
+    path('change-password/',password_change),
     path('list-of-teachers/',TeacherList.as_view()),
     path('list-of-students/',Student_class.as_view()),
     path('show-student-relate-to-teachers/',show_student_relate_to_teacher_),

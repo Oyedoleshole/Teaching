@@ -5,6 +5,7 @@ from django.db import transaction
 from student.models import Student
 
 class StudentSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source = 'user.email')
     class Meta:
         model = Student
         fields = ['id', 'user', 'teacher']

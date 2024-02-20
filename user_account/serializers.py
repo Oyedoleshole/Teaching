@@ -72,10 +72,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=255, required=False)
     mobile = serializers.CharField(max_length=200, required=False)
+    for_value = serializers.CharField(max_length=50, required=False)
     # password = serializers.CharField(input=password)
     class Meta:
         model = User
-        fields = ['email','password','mobile']
+        fields = ['email','password','mobile','for_value']
 
 class TaskCreationforAdminSerializer(serializers.ModelSerializer):
     task = serializers.CharField()
@@ -132,6 +133,7 @@ class TaskCreationforAdminSerializer(serializers.ModelSerializer):
             for teacher_id in assigned_teacher_ids:
                 try:
                     teacher = Teacher.objects.get(id=teacher_id)
+                    teacher.task_assign.add(task_creation)
                     teacher.date_and_time_of_task_assigned = datetime.now()
                     teacher.save()
                     task_creation.assigned_teacher.add(teacher)
