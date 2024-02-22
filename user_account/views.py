@@ -4,7 +4,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from user_account.models import User
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
-from .serializers import RegisterSerializer, LoginSerializer, TaskCreationforAdminSerializer
+from .serializers import RegisterSerializer, LoginSerializer, TaskCreationforAdminSerializer, UserSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
@@ -17,6 +17,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 import random
+from parent.models import Parent
 
 class EmailValidationOnForgotPassword(PasswordResetForm):
     def clean_email(self):
@@ -134,13 +135,16 @@ def login_user(request):
             try:
                 exist_user = User.objects.get(email=user.email)
                 if exist_user.is_verified is False:
-                    return Response({"message": "Please verify first"}, status=status.HTTP_400_BAD_REQUEST)
+                    # return Response({"message": "Please verify first"}, status=status.HTTP_400_BAD_REQUEST)
+                    pass
                 if for_value == "admin" and exist_user.is_superuser == True:
                     refresh = RefreshToken.for_user(user)
                     return Response({'message': "Login successfully", 'access_token': str(refresh.access_token)}, status=status.HTTP_200_OK)
                 elif for_value == "parent" and exist_user.is_parent == True:
+                    know_to_have_childrens = Parent.objects.get(user=user)
+                    children = know_to_have_childrens.childrens.all().exists()
                     refresh = RefreshToken.for_user(user)
-                    return Response({'message': "Login successfully", 'access_token': str(refresh.access_token)}, status=status.HTTP_200_OK)
+                    return Response({'message': "Login successfully", 'access_token': str(refresh.access_token),'childrens':children}, status=status.HTTP_200_OK)
                 elif for_value == 'children' and exist_user.is_student == True:
                     refresh = RefreshToken.for_user(user)
                     return Response({'message': "Login successfully", 'access_token': str(refresh.access_token)}, status=status.HTTP_200_OK)
@@ -189,9 +193,18 @@ class Task_added_by_admin(APIView):
 def delete_any_account(request):
     try:
         id = request.user.id
-        print("The Id is =====>",id)
         user = User.objects.get(id=id)
         user.delete()
         return Response({"message":"Account deleted successfully"},status=status.HTTP_200_OK)
-    except ObjectDoesNotExist:
-        return Response({"message":"User not found"},status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"message":"User not found",},status=status.HTTP_404_NOT_FOUND)
+
+#Show For All Users Details.
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def show_user_details(request):
+    user = User.objects.get(email=request.user)
+    serializer = UserSerializer(user)
+    return Response({'data':serializer.data}, status=200)
+    # return Response({'message':serializer.errors}, status=400)
+    

@@ -14,7 +14,8 @@ from parent.models import Parent
 from task_app.models import Task, Assignment
 from django.db.models import Q
 from task_app.serializers import TaskSerializer
-import datetime
+from datetime import datetime
+from django.core.exceptions import ObjectDoesNotExist
 
 class Student_class(APIView):
     def get(self, request):
@@ -101,7 +102,26 @@ class TaskDoneByStudentAPI(APIView):
                 print("The Teacher is===>", getting_the_teacher)
             else:
                 print("No Teacher found")
-            Assignment.objects.get_or_create(teacher=getting_the_teacher, student=student, task=task, assessment_file=assessment_file)
-            return Response({"message": "Task Completed"}, status=status.HTTP_200_OK)
+            try:
+                existing_assignment = Assignment.objects.get(
+                    teacher=getting_the_teacher,
+                    student=student,
+                    task=task,
+                )
+                if existing_assignment.is_completed:
+                    return Response({"message": "You have already completed this task"}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    existing_assignment.is_completed = True
+                    existing_assignment.save()
+                    return Response({"message": "Task Completed"}, status=status.HTTP_200_OK)
+            except ObjectDoesNotExist:
+                Assignment.objects.create(
+                    teacher=getting_the_teacher,
+                    student=student,
+                    task=task,
+                    assessment_file=assessment_file,
+                    is_completed=True
+                )
+                return Response({"message": "Task Completed"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

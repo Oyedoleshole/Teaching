@@ -40,7 +40,7 @@ class Assignment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE,null=True,blank=True)
     assessment_file = models.FileField(upload_to='user_image',null=True, blank=True)
     is_completed = models.BooleanField(default=False)
-    completion_date = models.DateTimeField(null=True, blank=True)
+    completion_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f"{self.student.user.email} - {self.task.name}"

@@ -145,3 +145,7 @@ class TaskCreationforAdminSerializer(serializers.ModelSerializer):
             response_message = "Task is already created"
         return {task_creation: response_message}
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id','first_name','last_name','email','mobile']
