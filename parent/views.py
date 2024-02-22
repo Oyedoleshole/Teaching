@@ -55,3 +55,16 @@ def create_parent(request):
     print(data['name'])
     # parents_data = User.objects.create_parent()
     return Response({"message":"Get data"})
+
+#API for Parent know our children whose kid task is completed.
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def parent_know_our_kid_task_status(request):
+    parent_table = Parent.objects.get(user=request.user)
+    student_table = []
+    for child in parent_table.childrens.all():
+        student = Student.objects.filter(user=child.user).first()
+        if student:
+            student_table.append(student)
+    print("The Student Table is ====>", student_table)
+    return Response({'message': 'success'}, status=200)

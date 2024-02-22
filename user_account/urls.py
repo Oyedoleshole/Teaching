@@ -6,7 +6,7 @@ from teacher.views import TeacherList, show_student_relate_to_teacher_, task_ass
 from student.views import Student_class, StudentLogin, show_student_details, get_student_profile_details, FilterTaskForStudent, TaskDoneByStudentAPI
 from task_app.views import ShowTaskBasedOnDateAndCategory, create_task_type, create_age_group, update_the_task \
 , ShowActivityProgressofTask
-from parent.views import CreateSudentUniqueID
+from parent.views import CreateSudentUniqueID, parent_know_our_kid_task_status
 urlpatterns = [
     path('email/verification/',email_verification),
     path('task_creation/',Task_added_by_admin.as_view()),
@@ -35,5 +35,6 @@ urlpatterns = [
     path('get-student-profile-details/',get_student_profile_details),
     path('delete-any-account/',delete_any_account),
     path('filter-task-for-student/',FilterTaskForStudent.as_view()),
-    path('task-completion/',TaskDoneByStudentAPI.as_view())
+    path('task-completion/',TaskDoneByStudentAPI.as_view()),
+    path('show-children-task-completion-results/',parent_know_our_kid_task_status)
 ]

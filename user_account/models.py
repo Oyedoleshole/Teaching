@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator, MaxLengthValidator, RegexValidator
 from django.contrib.auth.password_validation import  validate_password
 import uuid
+# from teacher.models import Teacher
+
 # from Cart.models import Cart
 
 class CustomPasswordValidator(object):
@@ -247,10 +249,10 @@ class User(AbstractBaseUser, PermissionsMixin,):
     mobile=mobile_num_validator(validators=[no_repeating_digits_validator, MaxLengthValidator(10), MinLengthValidator(6)],max_length=50, unique=True, null=True, blank=True)
     password = models.CharField(max_length=200)
     otp=models.IntegerField(default=int(0000))
-    image = models.ImageField(upload_to="user_image")
+    image = models.ImageField(upload_to="user_image",null=True, blank=True)
 
-    is_staff=models.BooleanField(default=False,)
-    is_active=models.BooleanField(default=True,)
+    is_staff=models.BooleanField(default=True)
+    is_active=models.BooleanField(default=True)
     is_superuser=models.BooleanField(default=False)
     is_verified=models.BooleanField(default=False)
     is_parent=models.BooleanField(default=False)
