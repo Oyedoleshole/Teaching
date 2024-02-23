@@ -74,7 +74,7 @@ def update_the_task(request):
         age_group_name = serializer.validated_data.get('age_group')
         try:
             task = Task.objects.get(id=task_id)
-            age_group = AgeGroup.objects.get(age_group=age_group_name)
+            age_group = AgeGroup.objects.get(id=age_group_name)
             serializer.update(task, serializer.validated_data, age_group=age_group)
             return Response({"message": "Task is updated"}, status=status.HTTP_200_OK)
         except Task.DoesNotExist:

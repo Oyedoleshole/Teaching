@@ -14,7 +14,6 @@ from parent.models import Parent
 from task_app.models import Task, Assignment
 from django.db.models import Q
 from task_app.serializers import TaskSerializer
-from datetime import datetime
 from django.core.exceptions import ObjectDoesNotExist
 
 class Student_class(APIView):
@@ -83,7 +82,7 @@ class FilterTaskForStudent(APIView):
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-
+#API for Task Done by Student and Filter task for Student.
 class TaskDoneByStudentAPI(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
@@ -123,5 +122,20 @@ class TaskDoneByStudentAPI(APIView):
                     is_completed=True
                 )
                 return Response({"message": "Task Completed"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+    def get(self, request):
+        date = request.GET.get('date')
+        if not date:
+            return Response({"message": "Please provide date in format YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if date:
+                task_details = Task.objects.filter(
+                    assigned_students=request.user.email,
+                    date_of_posted=date
+                )
+                serializer = TaskSerializer(task_details, many=True)
+                return Response({"data": serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

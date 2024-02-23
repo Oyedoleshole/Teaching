@@ -171,17 +171,30 @@ class GetTheTeacherData(APIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def homeforteacher(request):
+    student_have_task = 0
     user = User.objects.get(email=request.user.email)
     all_task_types = Task_type.objects.all()
     if user:
-        task = Task.objects.filter(task__in=all_task_types)
-        for values in task:
-            pass
-    teachers = values.assigned_teacher.all().distinct().count()
+        task_queryset = Task.objects.filter(task__in=all_task_types)
+        for task in task_queryset:
+            print("Task:", task)
+            assigned_teachers = task.assigned_teacher.all()
+            print("Number of Assigned Teachers:", assigned_teachers.count())
+            teachers = assigned_teachers.count()
+            for teacher in assigned_teachers:
+                print("Assigned Teacher:", teacher)
+    if user.is_student == True:
+        student = Student.objects.get(user=user)
+        student_have_task = student.task_assign.all().count()
+        print("Student have task:",student_have_task)
+    total_task = Task.objects.all().count()
     serializer = Task_Type_serializer(all_task_types, many=True)
     if serializer.is_valid:
         return JsonResponse(
             {
+                'student_task':student_have_task,
+                'user':str(user),
+                "total_task":total_task,
                 "task_assigned":teachers,
                 "data": serializer.data,
             },
