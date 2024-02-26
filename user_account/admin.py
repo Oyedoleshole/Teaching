@@ -58,7 +58,13 @@ class TeacherAdmin(admin.ModelAdmin):
 admin.site.register(AgeGroup)
 admin.site.register(Student)
 admin.site.register(Task_type)
-admin.site.register(Assignment)
 admin.site.register(Parent)
+@admin.register(Assignment)
+class AssignmentAdmin(admin.ModelAdmin):
+    list_display = ['id','completion_date','task',
+    'teacher',
+    'student',
+    'is_completed',
+    ]
 admin.site.site_header = "Teaching Administration"
 admin.site.site_title = "Teaching"

@@ -4,7 +4,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from user_account.models import User
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
-from .serializers import RegisterSerializer, LoginSerializer, TaskCreationforAdminSerializer, UserSerializer
+from .serializers import RegisterSerializer, LoginSerializer, TaskCreationforAdminSerializer, UserSerializer, ChildActivityProgressSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
@@ -18,6 +18,8 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 import random
 from parent.models import Parent
+from student.models import Student
+from task_app.models import Task
 
 class EmailValidationOnForgotPassword(PasswordResetForm):
     def clean_email(self):
@@ -206,5 +208,30 @@ def show_user_details(request):
     user = User.objects.get(email=request.user)
     serializer = UserSerializer(user)
     return Response({'data':serializer.data}, status=200)
-    # return Response({'message':serializer.errors}, status=400)
-    
+
+#Activity Progress for Parent.
+from datetime import datetime
+class ActivityProgressForParent(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        result = []
+        date_of_task = request.GET.get('date')
+        if not date_of_task:
+            return JsonResponse({"message": "Please provide date in format YYYY-MM-DD"}, status=400)
+        date_of_task = datetime.strptime(date_of_task, '%Y-%m-%d').date()
+        parent = Parent.objects.get(user=request.user)
+        children_they_have = parent.childrens.all()
+        for child in children_they_have:
+            user = User.objects.get(email=child)
+            get_the_data_for_requested_child = Student.objects.filter(user=user)
+            result.append(get_the_data_for_requested_child)
+        # print("Get the data for the requested child========>",result)
+            serializer = ChildActivityProgressSerializer(get_the_data_for_requested_child, many=True)
+            if serializer.is_valid:
+                return Response({'data':serializer.data},status=200)
+            return Response({'message':serializer.errors},status=400)
+        # get_the_data_for_requested_teacher = Task.objects.filter(assigned_teacher=teacher, date_of_posted = date_of_task)
+        # serializer = TeacherActivityProgressSerializer(get_the_data_for_requested_teacher, many=True)
+        # if serializer.is_valid:
+        #     return Response({'data':serializer.data},status=200)
+        # return Response({'message':serializer.errors},status=400)

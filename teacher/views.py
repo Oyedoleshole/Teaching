@@ -13,6 +13,7 @@ from student.models import Student
 from task_app.models import Task, Task_type
 from rest_framework import generics, permissions
 from task_app.serializers import TaskSerializer
+from parent.models import Parent
 class TeacherList(APIView):
     def get(self, request):
         data = Teacher.objects.all()
@@ -171,31 +172,27 @@ class GetTheTeacherData(APIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def homeforteacher(request):
+    teacher_have_task = 0
     student_have_task = 0
     user = User.objects.get(email=request.user.email)
     all_task_types = Task_type.objects.all()
-    if user:
-        task_queryset = Task.objects.filter(task__in=all_task_types)
-        for task in task_queryset:
-            print("Task:", task)
-            assigned_teachers = task.assigned_teacher.all()
-            print("Number of Assigned Teachers:", assigned_teachers.count())
-            teachers = assigned_teachers.count()
-            for teacher in assigned_teachers:
-                print("Assigned Teacher:", teacher)
     if user.is_student == True:
         student = Student.objects.get(user=user)
         student_have_task = student.task_assign.all().count()
         print("Student have task:",student_have_task)
+    if user.is_teacher == True:
+        teacher = Teacher.objects.get(user=user)
+        teacher_have_task = teacher.students.all().count()
+        print("Teacher have task:",teacher_have_task)
     total_task = Task.objects.all().count()
     serializer = Task_Type_serializer(all_task_types, many=True)
     if serializer.is_valid:
         return JsonResponse(
             {
-                'student_task':student_have_task,
                 'user':str(user),
                 "total_task":total_task,
-                "task_assigned":teachers,
+                'student_task':student_have_task,
+                "task_assigned_to_teacher":teacher_have_task,
                 "data": serializer.data,
             },
             status=200
@@ -224,16 +221,17 @@ class AfterHomeScreenTask(APIView):
             return JsonResponse({"message":"Task Type Not Found!"},status=404)
         except Task.DoesNotExist:
             return JsonResponse({"message":"Task Not Found!"},status=404)
-        
+
+from datetime import datetime
 class ActivityProgressForTeacher(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        date = request.GET.get('date')
-        if not date:
+        date_of_task = request.GET.get('date')
+        if not date_of_task:
             return JsonResponse({"message": "Please provide date in format YYYY-MM-DD"}, status=400)
+        date_of_task = datetime.strptime(date_of_task, '%Y-%m-%d').date()
         teacher = Teacher.objects.get(user=request.user)
-        get_the_data_for_requested_teacher = Task.objects.filter(assigned_teacher=teacher, date_of_posted__date = date)
-        # print("The fetched data is ===>",get_the_data_for_requested_teacher)
+        get_the_data_for_requested_teacher = Task.objects.filter(assigned_teacher=teacher, date_of_posted = date_of_task)
         serializer = TeacherActivityProgressSerializer(get_the_data_for_requested_teacher, many=True)
         if serializer.is_valid:
             return Response({'data':serializer.data},status=200)
