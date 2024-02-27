@@ -176,14 +176,14 @@ def homeforteacher(request):
     student_have_task = 0
     user = User.objects.get(email=request.user.email)
     all_task_types = Task_type.objects.all()
-    if user.is_student == True:
-        student = Student.objects.get(user=user)
-        student_have_task = student.task_assign.all().count()
-        print("Student have task:",student_have_task)
-    if user.is_teacher == True:
-        teacher = Teacher.objects.get(user=user)
-        teacher_have_task = teacher.students.all().count()
-        print("Teacher have task:",teacher_have_task)
+    # if user.is_student == True:
+    #     student = Student.objects.get(user=user)
+    #     student_have_task = student.task_assign.all().count()
+    #     print("Student have task:",student_have_task)
+    # if user.is_teacher == True:
+    #     teacher = Teacher.objects.get(user=user)
+    #     teacher_have_task = teacher.students.all().count()
+    #     print("Teacher have task:",teacher_have_task)
     total_task = Task.objects.all().count()
     serializer = Task_Type_serializer(all_task_types, many=True)
     if serializer.is_valid:

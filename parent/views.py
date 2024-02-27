@@ -5,6 +5,8 @@ import random
 from user_account.models import User
 from student.models import Student
 from parent.models import Parent
+from .serializers import ChildActivityProgressSerializer
+from datetime import datetime
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -68,3 +70,21 @@ def parent_know_our_kid_task_status(request):
             student_table.append(student)
     print("The Student Table is ====>", student_table)
     return Response({'message': 'success'}, status=200)
+
+#Activity Progress for Parent.
+class ActivityProgressForParent(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        result = []
+        date_of_task = request.GET.get('date')
+        if not date_of_task:
+            return Response({"message": "Please provide date in format YYYY-MM-DD"}, status=400)
+        date_of_task = datetime.strptime(date_of_task, '%Y-%m-%d').date()
+        parent = Parent.objects.get(user=request.user)
+        children_they_have = parent.childrens.all()
+        for child in children_they_have:
+            get_the_data_for_requested_child = Student.objects.filter(user=User.objects.get(email=child.user))
+            print('The data is ===>', get_the_data_for_requested_child)
+            serialized_data = ChildActivityProgressSerializer(get_the_data_for_requested_child, many=True).data
+            result.append(serialized_data)
+        return Response({'data': result}, status=200)

@@ -1,13 +1,13 @@
 from django.urls import path
 from .views import RegisterUser, login_user, Task_added_by_admin, email_verification,delete_any_account, resend_otp, password_change \
-, show_user_details, ActivityProgressForParent
+, show_user_details, search_teacher, get_ages_types
 from teacher.views import TeacherList, show_student_relate_to_teacher_, task_assign_to_student_by_teacher, TaskAssignToStudentByTeacher \
 , TeacherRemarkAfterPostedTaskForStudent, GetTheTeacherData, AfterHomeScreenTask, homeforteacher, ActivityProgressForTeacher, task_progress_for_teacher_app \
 
 from student.views import Student_class, StudentLogin, show_student_details, get_student_profile_details, FilterTaskForStudent, TaskDoneByStudentAPI
 from task_app.views import ShowTaskBasedOnDateAndCategory, create_task_type, create_age_group, update_the_task \
 , ShowActivityProgressofTask
-from parent.views import CreateSudentUniqueID, parent_know_our_kid_task_status
+from parent.views import CreateSudentUniqueID, parent_know_our_kid_task_status,ActivityProgressForParent
 urlpatterns = [
     path('email/verification/',email_verification),
     path('task_creation/',Task_added_by_admin.as_view()),
@@ -39,5 +39,7 @@ urlpatterns = [
     path('task-completion/',TaskDoneByStudentAPI.as_view()),
     path('show-children-task-completion-results/',parent_know_our_kid_task_status),
     path('show-user-details/',show_user_details),
-    path('activity-progress-for-parent/',ActivityProgressForParent.as_view())
+    path('activity-progress-for-parent/',ActivityProgressForParent.as_view()),
+    path('search-teacher/',search_teacher),
+    path('all-ages-types/',get_ages_types)
 ]

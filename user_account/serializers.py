@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.db import transaction
 from parent.models import Parent
 from datetime import datetime
+from task_app.models import AgeGroup
 
 class RegisterSerializer(serializers.ModelSerializer):
     for_value = serializers.CharField(max_length=10, required=True)
@@ -148,9 +149,9 @@ class TaskCreationforAdminSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','first_name','last_name','email','mobile']
+        fields = ['id','first_name','last_name','email','mobile','image']
 
-class ChildActivityProgressSerializer(serializers.ModelSerializer):
+class AgeGroupSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Student
-        fields = ['id','first_name','last_name','image','task_assign','teacher','dob']
+        model = AgeGroup
+        fields = '__all__'
