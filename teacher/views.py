@@ -12,8 +12,9 @@ from rest_framework.decorators import permission_classes
 from student.models import Student
 from task_app.models import Task, Task_type
 from rest_framework import generics, permissions
-from task_app.serializers import TaskSerializer
+from task_app import serializers
 from parent.models import Parent
+
 class TeacherList(APIView):
     def get(self, request):
         data = Teacher.objects.all()
@@ -40,10 +41,19 @@ class task_assign_to_student_by_teacher(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         task_id = request.GET.get('task_id')
+        student_listing = Teacher.objects.get(user=request.user)
         if not task_id:
             return JsonResponse({"message":"Please provide task_id"},status=400)
-        student_listing = Teacher.objects.get(user=request.user)
+        try:
+            task_details = Task.objects.get(id=task_id, assigned_teacher=student_listing)
+        except Task.DoesNotExist:
+            task_details = False
+            return JsonResponse({"message":"Task is not exists or not assign to requested teacher"}, status=400)
         students_are = student_listing.students.all()
+        serializer = TaskSerializer(task_details)
+        return JsonResponse({"data":serializer.data},status=status.HTTP_200_OK)
+        # else:
+        #     return JsonResponse({'error': 'Invalid Request'},status=status.HTTP_406_NOT_ACCEPTABLE)
         student_ID_list = []
         students_name_list = []
         for values in students_are:
@@ -51,11 +61,6 @@ class task_assign_to_student_by_teacher(APIView):
             students_name = f"{values.user.first_name} {values.user.last_name}"
             students_name_list.append(student_ID)
             students_name_list.append(students_name)
-        try:
-            task_details = Task.objects.get(id=task_id, assigned_teacher=student_listing)
-        except Task.DoesNotExist:
-            task_details = False
-            return JsonResponse({"message":"Task is not exists or not assign to requested teacher"}, status=400)
         task_ids = task_details.id
         task_name = task_details.name
         task_details_ = task_details.description
@@ -65,6 +70,7 @@ class task_assign_to_student_by_teacher(APIView):
     def post(self, request):
         task_id = request.POST.get('task_id')
         student_id = request.POST.getlist('student_id')
+        print("The Student is =====>",student_id)
         if not task_id:
             return JsonResponse({"message": "Please provide task_id"}, status=400)
         if not student_id:
@@ -79,11 +85,14 @@ class task_assign_to_student_by_teacher(APIView):
         try:
             for value in student_id:
                 get_the_student = Student.objects.get(id=value)
+                print("Get the student ",get_the_student)
                 get_the_student.task_assign.add(task)
+                task.assigned_student.add(get_the_student)
+                teacher.students.add(get_the_student)
         except Student.DoesNotExist:
             return JsonResponse({"message":"Student not found"},status=400)
-        task.assigned_student.add(get_the_student)
-        teacher.students.add(get_the_student)
+        task.is_completed = "completed"
+        task.save()
         return JsonResponse({"message": "Task assigned successfully"},status=200)
 
 #This is not in use.
@@ -213,7 +222,7 @@ class AfterHomeScreenTask(APIView):
         try:
             get_the_task_type = Task_type.objects.get(id=task_type_id)
             get_the_task = Task.objects.filter(task=get_the_task_type)
-            serializer = TaskSerializer(get_the_task, many=True)
+            serializer = serializers.TaskSerializer(get_the_task, many=True)
             if serializer.is_valid:
                 return JsonResponse({"data":serializer.data},status=200)
             return JsonResponse({"message":serializer.errors},status=400)
