@@ -19,6 +19,8 @@ class ShowTaskBasedOnDateAndCategory(APIView):
             return Response({"message": "Please provide teacher_id"}, status=status.HTTP_400_BAD_REQUEST)
         if not date:
             return Response({"message": "Please provide date in format YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
+        if not type_of_task_ids:
+            return Response({"message": "Please provide type_of_task_id"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             if type_of_task_ids and teacher_id and date:
                 q_objects = Q()

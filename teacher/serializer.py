@@ -35,10 +35,11 @@ class TeacherlistingSerializer(serializers.ModelSerializer):
     email = serializers.CharField(source='user.email', read_only=True)
     students = StudentSerializer(many=True, read_only=True)
     date_and_time_of_task_assigned = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    task_assign = TaskSerializer(many=True, read_only=True)
 
     class Meta:
         model = Teacher
-        fields = ['email', 'students', 'image', 'date_and_time_of_task_assigned']
+        fields = ['id','email', 'students', 'task_assign', 'image', 'date_and_time_of_task_assigned']
 
 
 class ShowStudentRelateToTeacher(serializers.ModelSerializer):

@@ -19,4 +19,4 @@ class TeacherAddRemarkandImageForExistinceTask(models.Model):
     remark = models.TextField()
 
     def __str__(self):
-        return self.remark + " - " + str(self.user) 
+        return self.remark + " - " + str(self.user)

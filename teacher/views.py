@@ -183,24 +183,41 @@ class GetTheTeacherData(APIView):
 def homeforteacher(request):
     teacher_have_task = 0
     student_have_task = 0
+    children_relate_to_parent = 0
     user = User.objects.get(email=request.user.email)
     all_task_types = Task_type.objects.all()
-    # if user.is_student == True:
-    #     student = Student.objects.get(user=user)
-    #     student_have_task = student.task_assign.all().count()
-    #     print("Student have task:",student_have_task)
-    # if user.is_teacher == True:
-    #     teacher = Teacher.objects.get(user=user)
-    #     teacher_have_task = teacher.students.all().count()
-    #     print("Teacher have task:",teacher_have_task)
+    if user.is_student == True:
+        student = Student.objects.get(user=user)
+        student_have_task = student.task_assign.all()
+        if student_have_task.exists():
+            student_have_task = student_have_task.count()
+        else:
+            student_have_task = 0
+        print("Student have task:",student_have_task)
+    if user.is_teacher == True:
+        teacher = Teacher.objects.get(user=user)
+        teacher_have_task = teacher.task_assign.all()
+        if teacher_have_task.exists():
+            teacher_have_task = teacher_have_task.count()
+        else:
+            teacher_have_task = 0
+        print("Teacher have task:",teacher_have_task)
+    if user.is_parent == True:
+        parent = Parent.objects.get(user=user)
+        children_relate_to_parent = parent.childrens.all()
+        if children_relate_to_parent.exists():
+            children_relate_to_parent = children_relate_to_parent.count()
+        else:
+            children_relate_to_parent = 0
     total_task = Task.objects.all().count()
     serializer = Task_Type_serializer(all_task_types, many=True)
     if serializer.is_valid:
         return JsonResponse(
             {
                 'user':str(user),
+                'children_have_task':children_relate_to_parent,
                 "total_task":total_task,
-                'student_task':student_have_task,
+                'student_assigned_task':student_have_task,
                 "task_assigned_to_teacher":teacher_have_task,
                 "data": serializer.data,
             },

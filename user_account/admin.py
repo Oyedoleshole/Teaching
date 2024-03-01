@@ -1,10 +1,15 @@
 from typing import Any
+from django.contrib.auth.models import Group
 from django.contrib import admin
 from .models import User
 from task_app.models import Task, Task_type, Assignment, AgeGroup
 from student.models import Student
 from teacher.models import Teacher, TeacherAddRemarkandImageForExistinceTask
 from parent.models import Parent
+from django.core.mail import send_mail, BadHeaderError
+from smtplib import SMTPResponseException
+from django.contrib.auth.hashers import make_password
+
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'email', 'mobile', 'is_parent', 'is_superuser', 'is_student','is_teacher')
@@ -13,13 +18,17 @@ class UserAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-        if obj.is_teacher == True and obj.is_parent == True:
-            Teacher.objects.create(user=obj)
-            Parent.objects.create(user=obj)  
-        elif obj.is_teacher == True:
-            Teacher.objects.create(user=obj)
-        elif obj.is_parent==True:
-            Parent.objects.create(user=obj)
+        if 'password' in form.changed_data:
+            plain_password = form.cleaned_data['password']
+            if obj.is_teacher and obj.is_parent:
+                Teacher.objects.create(user=obj)
+                Parent.objects.create(user=obj)
+            elif obj.is_teacher:
+                Teacher.objects.create(user=obj)
+            elif obj.is_parent:
+                Parent.objects.create(user=obj)
+        send_mail("Congratulations! Your Account Details", f"Email: {obj.email}, Password: {plain_password}", 'sharmaeshu54@gmail.com', [obj.email], fail_silently=False)
+        
     # ordering = ['email']
     # ordering = ['email']
     # def staff_status(self, obj):
@@ -66,5 +75,6 @@ class AssignmentAdmin(admin.ModelAdmin):
     'student',
     'is_completed',
     ]
+admin.site.unregister(Group)
 admin.site.site_header = "Teaching Administration"
 admin.site.site_title = "Teaching"
