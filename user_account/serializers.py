@@ -155,3 +155,27 @@ class AgeGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgeGroup
         fields = '__all__'
+
+class AdminActivityProgressSerializer(serializers.ModelSerializer):
+    task_type = serializers.CharField(source='task.task_type')
+    assigned_teacher = serializers.SerializerMethodField()
+    assigned_student = serializers.SerializerMethodField()
+    def get_assigned_student(self, instance):
+        students = instance.assigned_student.all()
+        return [{'id': student.id, 'first_name': student.user.first_name, 'last_name':student.user.last_name} for student in students]
+    
+    def get_assigned_teacher(self, instance):
+        teachers = instance.assigned_teacher.all()
+        return [{'id': teacher.id, 'first_name': teacher.user.first_name, 'last_name':teacher.user.last_name} for teacher in teachers]
+    class Meta:
+        model = Task
+        fields = ('id', 'task_type', 'name', 'description', 'submission_date', 'is_completed','assigned_student','assigned_teacher')
+
+class Show_only_teachers(serializers.ModelSerializer):
+    assigned_teacher = serializers.SerializerMethodField()
+    def get_assigned_teacher(self, instance):
+        teachers = instance.assigned_teacher.all()
+        return [{'id': teacher.id, 'first_name': teacher.user.first_name, 'last_name':teacher.user.last_name} for teacher in teachers]
+    class Meta:
+        model = Task
+        fields = ['id','assigned_teacher','assigned_student']

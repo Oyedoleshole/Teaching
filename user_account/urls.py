@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import RegisterUser, login_user, Task_added_by_admin, email_verification,delete_any_account, resend_otp, password_change \
-, show_user_details, search_teacher, get_ages_types
+, show_user_details, search_teacher, get_ages_types, ActivityProgressForAdmin
 from teacher.views import TeacherList, show_student_relate_to_teacher_, task_assign_to_student_by_teacher, TaskAssignToStudentByTeacher \
 , TeacherRemarkAfterPostedTaskForStudent, GetTheTeacherData, AfterHomeScreenTask, homeforteacher, ActivityProgressForTeacher, task_progress_for_teacher_app \
 
@@ -41,5 +41,6 @@ urlpatterns = [
     path('show-user-details/',show_user_details),
     path('activity-progress-for-parent/',ActivityProgressForParent.as_view()),
     path('search-teacher/',search_teacher),
-    path('all-ages-types/',get_ages_types)
+    path('all-ages-types/',get_ages_types),
+    path('activity-progress-for-admin/',ActivityProgressForAdmin.as_view()),
 ]

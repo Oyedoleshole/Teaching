@@ -5,7 +5,7 @@ from user_account.models import User
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from .serializers import RegisterSerializer, LoginSerializer, TaskCreationforAdminSerializer, UserSerializer \
-, AgeGroupSerializer
+, AgeGroupSerializer, AdminActivityProgressSerializer, Show_only_teachers
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
@@ -226,3 +226,32 @@ def get_ages_types(request):
     ages = AgeGroup.objects.all()
     serializer = AgeGroupSerializer(ages,many=True)
     return Response(serializer.data, status=200)
+
+from datetime import datetime
+class ActivityProgressForAdmin(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        date_of_task = request.GET.get('date')
+        if not date_of_task:
+            return JsonResponse({"message": "Please provide date in format YYYY-MM-DD"}, status=400)
+        date_of_task = datetime.strptime(date_of_task, '%Y-%m-%d').date()
+        get_the_data_for_requested_teacher = Task.objects.filter(date_of_posted = date_of_task)
+        serializer = AdminActivityProgressSerializer(get_the_data_for_requested_teacher, many=True)
+        if serializer.is_valid:
+            return Response({'data':serializer.data},status=200)
+        return Response({'message':serializer.errors},status=400)
+    
+    def post(self,request):
+        task_id = request.POST.get('task_id')
+        if not task_id:
+            return JsonResponse({"message": "Please provide task id"}, status=400)
+        try : 
+            task = Task.objects.get(id=task_id)
+            serializer = Show_only_teachers(task)
+            if serializer.is_valid:
+                return Response({'data':serializer.data},status=200)
+            return Response({'message':serializer.errors},status=400)
+        except Exception as e:
+            return Response({'message':e},status=400)
+        
+    
