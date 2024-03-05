@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.db import transaction
 from parent.models import Parent
 from datetime import datetime
-from task_app.models import AgeGroup
+from task_app.models import AgeGroup, Assignment
 
 class RegisterSerializer(serializers.ModelSerializer):
     for_value = serializers.CharField(max_length=10, required=True)
@@ -170,12 +170,50 @@ class AdminActivityProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ('id', 'task_type', 'name', 'description', 'submission_date', 'is_completed','assigned_student','assigned_teacher')
-
+from datetime import datetime
 class Show_only_teachers(serializers.ModelSerializer):
     assigned_teacher = serializers.SerializerMethodField()
+    
     def get_assigned_teacher(self, instance):
-        teachers = instance.assigned_teacher.all()
-        return [{'id': teacher.id, 'first_name': teacher.user.first_name, 'last_name':teacher.user.last_name} for teacher in teachers]
+        try:
+            teachers = instance.assigned_teacher.all()
+            teacher_data = []
+            for teacher in teachers:
+                teacher_info = {
+                    'id': teacher.id,
+                    'first_name': teacher.user.first_name,
+                    'last_name': teacher.user.last_name,
+                    'image': self.get_image_url(teacher),
+                    'datetime_of_task_assigned':teacher.date_and_time_of_task_assigned,
+                    'task_assigned_to_student_by_teacher': self.get_student_names(teacher),
+                }
+                teacher_data.append(teacher_info)
+            return teacher_data
+        except AttributeError as e:
+            print("Error occurred:", e)
+            return None
+    
+    def get_student_names(self, teacher):
+        student_data = []
+        for student in teacher.students.all():
+            assess = Assignment.objects.filter(teacher=teacher, student=student)
+            student_info = {
+                'id': student.id,
+                'first_name': student.user.first_name,
+                'last_name': student.user.last_name,
+            }
+            for a_value in assess:
+                student_info.update({'task_completed': a_value.is_completed,'completion_date':a_value.completion_date})
+            student_data.append(student_info)
+        return student_data
+            
+    
+    def get_image_url(self, teacher):
+        if teacher.image:
+            return teacher.image.url
+        else:
+            return None
+    
     class Meta:
         model = Task
-        fields = ['id','assigned_teacher','assigned_student']
+        fields = ['id', 'assigned_teacher']

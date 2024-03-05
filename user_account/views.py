@@ -249,9 +249,7 @@ class ActivityProgressForAdmin(APIView):
             task = Task.objects.get(id=task_id)
             serializer = Show_only_teachers(task)
             if serializer.is_valid:
-                return Response({'data':serializer.data},status=200)
+                return Response(serializer.data,status=200)
             return Response({'message':serializer.errors},status=400)
         except Exception as e:
             return Response({'message':e},status=400)
-        
-    
