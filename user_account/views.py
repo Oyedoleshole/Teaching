@@ -218,6 +218,9 @@ def search_teacher(request):
     if not search_result:
         return JsonResponse({"message": "Please provide search keyword in query parameter."}, status=400)
     user = User.objects.filter(first_name__icontains=search_result, is_teacher=True)
+    print("User is ===>",user)
+    teacher = Teacher.objects.filter(user__in=user)
+    print("The teacher is ====>",teacher)
     serializer = UserSerializer(user, many=True)
     return Response({'data':serializer.data}, status=200)
 
